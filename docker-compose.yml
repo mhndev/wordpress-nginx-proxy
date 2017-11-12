@@ -9,7 +9,6 @@ services:
     image: nginx:1.13.6-alpine
     expose:
      - "80"
-     - "443"
 
     restart: unless-stopped
     volumes:
@@ -20,25 +19,24 @@ services:
   ## --------------------------------------------
   wp1_web:
     build:
-      context: ./.docker-compose/web
+      context: ./.docker-compose/wp1_web
       dockerfile: Dockerfile
       args:
-        - WWW_DATA_USER_ID=${WWW_DATA_USER_ID}
+        - WWW_DATA_USER_ID=${wp1_WWW_DATA_USER_ID}
     image: img_wp1_web
     expose:
       - "80"
-      - "443"
     volumes:
       - ./src/wp1/:/var/www/html/
       - ./data/wp1_web/apache/logs/:/var/log/apache2
       - ./.docker-compose/wp1_web/apache.conf:/etc/apache2/sites-enabled/000-default.conf
 
     environment:
-      - WORDPRESS_DB_HOST=behroo_wp_db
-      - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
-      - WORDPRESS_DB_USER=${MYSQL_USER}
-      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
-      - WORDPRESS_TABLE_PREFIX=${TABLE_PREFIX}
+      - WORDPRESS_DB_HOST=wp1_storage
+      - WORDPRESS_DB_NAME=${wp1_MYSQL_DATABASE}
+      - WORDPRESS_DB_USER=${wp1_MYSQL_USER}
+      - WORDPRESS_DB_PASSWORD=${wp1_MYSQL_PASSWORD}
+      - WORDPRESS_TABLE_PREFIX=${wp1_TABLE_PREFIX}
     depends_on:
       - wp1_storage
 
@@ -49,8 +47,8 @@ services:
   wp1_storage:
     image: mysql:5.7.20
     volumes:
-      - ./data/db:/var/lib/mysql
-      - ./.docker-compose/db/mysql/conf.d:/etc/mysql/conf.d/
+      - ./data/wp1_storage:/var/lib/mysql
+      - ./.docker-compose/wp2_storage/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
     expose:
       - "3306"
     restart: unless-stopped
@@ -66,14 +64,13 @@ services:
   ## --------------------------------------------
   wp2_web:
     build:
-      context: ./.docker-compose/web
+      context: ./.docker-compose/wp2_web
       dockerfile: Dockerfile
       args:
-        - WWW_DATA_USER_ID=${WWW_DATA_USER_ID}
+        - WWW_DATA_USER_ID=${wp2_WWW_DATA_USER_ID}
     image: img_wp2_web
     expose:
       - "80"
-      - "443"
     volumes:
       - ./src/wp2/:/var/www/html/
       - ./data/wp2_web/apache/logs/:/var/log/apache2
@@ -96,13 +93,13 @@ services:
   wp2_storage:
     image: mysql:5.7.20
     volumes:
-      - ./data/db:/var/lib/mysql
-      - ./.docker-compose/db/mysql/conf.d:/etc/mysql/conf.d/
+      - ./data/wp2_storage:/var/lib/mysql
+      - ./.docker-compose/wp2_storage/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
     expose:
       - "3306"
     restart: unless-stopped
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${wp2_MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${wp2_MYSQL_DATABASE}
+      - MYSQL_USER=${wp2_MYSQL_USER}
+      - MYSQL_PASSWORD=${wp2_MYSQL_PASSWORD}
